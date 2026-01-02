@@ -1,21 +1,23 @@
 # Sistema de Gestión de Órdenes (POS) - Prueba Técnica
 
+## Jonathan Alexander Rodriguez Campos
+
 Este repositorio contiene la solución a la prueba técnica para el rol de Frontend Developer. El proyecto implementa un sistema de punto de venta (POS) con inventario en tiempo real, priorizando una **arquitectura desacoplada**, el uso de **Programación Orientada a Objetos (POO)** y la separación estricta de responsabilidades, tal como se solicitó en los requerimientos.
 
 ## Resumen de la Solución
 
 El sistema permite gestionar el ciclo de vida completo de una venta: desde la administración de productos y clientes hasta la creación de órdenes, control de stock en tiempo real y alertas administrativas.
 
-### Cumplimiento de Requerimientos
+### implementacion de Requerimientos
 
-| Requerimiento              | Estado | Implementación                                                      |
-| :------------------------- | :----: | :------------------------------------------------------------------ |
-| **Arquitectura OOP**       |   ✅   | Uso estricto de Clases, Interfaces e Inyección de Dependencias.     |
-| **Separación Lógica/UI**   |   ✅   | La lógica vive en la capa `Core`, React solo renderiza.             |
-| **Inventario Tiempo Real** |   ✅   | Patrón Observer y Pub/Sub para actualizar la UI sin recargar.       |
-| **Persistencia**           |   ✅   | **IndexedDB** para datos críticos y LocalStorage para logs.         |
-| **Notificaciones**         |   ✅   | Sistema de alertas (`inventory:low`, `inventory:out`) persistentes. |
-| **No "any"**               |   ✅   | Tipado estricto en TypeScript.                                      |
+|       Requerimiento        | Implementación                                                      |
+| :------------------------: | :------------------------------------------------------------------ |
+|    **Arquitectura OOP**    | Uso estricto de Clases, Interfaces e Inyección de Dependencias.     |
+|  **Separación Lógica/UI**  | La lógica vive en la capa `Core`, React solo renderiza.             |
+| **Inventario Tiempo Real** | Patrón Observer y Pub/Sub para actualizar la UI sin recargar.       |
+|      **Persistencia**      | **IndexedDB** para datos críticos y LocalStorage para logs.         |
+|     **Notificaciones**     | Sistema de alertas (`inventory:low`, `inventory:out`) persistentes. |
+|        **No "any"**        | Tipado estricto en TypeScript.                                      |
 
 ---
 
@@ -76,3 +78,23 @@ src/
 │
 └── main.tsx                   # Composition Root (Configuración)
 ```
+
+## Instalar el proyecto
+
+1.  **Clonar el repositorio:**
+
+    ```bash
+    git clone <https://github.com/jonathanrodriguezc16/Sistema_de_Ordenes.git>
+    cd sistema-de-ordenes
+    ```
+
+2.  **Instalar dependencias:**
+
+    ```bash
+    npm i
+    ```
+
+3.  **Correr el proyecto:**
+    ```bash
+     npm run dev
+    ```
