@@ -1,40 +1,45 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.tsx';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
 
-// --- IMPORTACIONES DE CORE Y SERVICIOS ---
-import { InventoryService } from './core/services/InventoryService';
-import { OrderService } from './core/services/OrderService.ts';
-import { ClientService } from './core/services/ClientService.ts';
-import { ServiceProvider } from './presentation/context/ServiceContext';
-import { NotificationService } from './infrastructure/websocket/NotificationService';
+// --- Capa de Servicios (Aplicación) ---
+import { InventoryService } from "./core/services/InventoryService";
+import { OrderService } from "./core/services/OrderService.ts";
+import { ClientService } from "./core/services/ClientService.ts";
 
-// --- NUEVAS IMPORTACIONES DE INFRAESTRUCTURA (INDEXEDDB) ---
-import { IndexedDBInventoryRepository } from './infrastructure/repositories/IndexedDBInventoryRepository';
-import { IndexedDBClientRepository } from './infrastructure/repositories/IndexedDBClientRepository';
-import { IndexedDBOrderRepository } from './infrastructure/repositories/IndexedDBOrderRepository';
+// --- Capa de Infraestructura (Persistencia y Externos) ---
+import { IndexedDBInventoryRepository } from "./infrastructure/repositories/IndexedDBInventoryRepository";
+import { IndexedDBClientRepository } from "./infrastructure/repositories/IndexedDBClientRepository";
+import { IndexedDBOrderRepository } from "./infrastructure/repositories/IndexedDBOrderRepository";
+import { NotificationService } from "./infrastructure/websocket/NotificationService";
 
-// 1. Instanciamos las dependencias con IndexedDB
+// --- Contexto de Inyección ---
+import { ServiceProvider } from "./presentation/context/ServiceContext";
+
+/**
+ * COMPOSITION ROOT
+ * Aquí se instancian todas las dependencias y se inyectan en la aplicación.
+ * Esto asegura que los componentes de React no conozcan la implementación concreta (IndexedDB).
+ */
+
+// 1. Instancia de Repositorios (Adaptadores)
 const inventoryRepo = new IndexedDBInventoryRepository();
 const clientRepo = new IndexedDBClientRepository();
 const orderRepo = new IndexedDBOrderRepository();
 
+// 2. Instancia de Servicios Externos
 const notificationService = new NotificationService();
 
-// 2. Inyectamos los repositorios en los servicios
-const inventoryService = new InventoryService(inventoryRepo, notificationService);
-// IMPORTANTE: Si tu OrderService espera un repositorio de órdenes en el constructor, inyéctalo aquí.
-// Si tu OrderService actual solo usaba 'inventoryService', puede que necesites actualizarlo para guardar órdenes.
-// Asumiendo que OrderService guarda el historial, deberías pasárselo:
+// 3. Inyección de Dependencias en Servicios de Dominio
+const inventoryService = new InventoryService(
+  inventoryRepo,
+  notificationService
+);
 const orderService = new OrderService(inventoryService, orderRepo);
-
 const clientService = new ClientService(clientRepo);
 
-
-
-
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ServiceProvider
       inventoryService={inventoryService}
@@ -42,9 +47,7 @@ createRoot(document.getElementById('root')!).render(
       orderService={orderService}
       clientService={clientService}
     >
-
-
       <App />
     </ServiceProvider>
-  </StrictMode>,
+  </StrictMode>
 );

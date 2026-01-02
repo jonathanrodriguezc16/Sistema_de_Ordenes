@@ -1,34 +1,38 @@
-# Sistema de Órdenes (POS) - Prueba Técnica Frontend
+# Sistema de Gestión de Órdenes (POS) - Technical Assessment
 
-Solución para el reto técnico de Frontend. Es una aplicación de Punto de Venta que gestiona inventario, clientes y órdenes de compra, con un enfoque principal en la arquitectura de software y separación de responsabilidades.
+Este repositorio contiene la solución a la prueba técnica para el rol de Frontend Developer. El objetivo principal de la implementación fue diseñar una arquitectura escalable, mantenible y desacoplada, priorizando la **Clean Architecture** y la separación de responsabilidades sobre un desarrollo tradicional acoplado a la UI.
 
-## 🛠 Stack Tecnológico
+## 📋 Resumen de la Solución
 
-- **Core:** React 18 + TypeScript + Vite
-- **Estilos:** TailwindCSS
-- **Persistencia:** IndexedDB (Principal) con fallback a LocalStorage
-- **Iconos:** Lucide React
+El proyecto no es solo una aplicación de React; es una aplicación de software estructurada por capas donde **React es simplemente un detalle de implementación** para la capa de presentación.
 
-## 🏗 Arquitectura y Decisiones de Diseño
+### Principios de Diseño Aplicados
 
-El requerimiento principal era **sacar la lógica de negocio de los componentes**. Para lograrlo, implementé una variante de **Clean Architecture** dividida en 3 capas claras.
+- **Clean Architecture:** Separación estricta entre Dominio, Infraestructura y Presentación.
+- **Domain-Driven Design (DDD):** Uso de Modelos Ricos (_Rich Domain Models_) en lugar de modelos anémicos (simples interfaces JSON).
+- **SOLID:** Especial énfasis en Inversión de Dependencias (D) y Responsabilidad Única (S).
 
-La idea es que React (`presentation`) solo se encargue de pintar, mientras que las reglas de negocio viven en clases de TypeScript puro (`core`).
+---
 
-### Estructura del proyecto
+## 🏗 Arquitectura y Estructura
+
+El código se organiza en tres capas concéntricas. La regla de oro es que **la lógica de negocio no debe depender de la UI ni de la base de datos**.
 
 ```text
 src/
-├── core/               # Lógica pura. No sabe que existe React.
-│   ├── domain/         # Entidades (Product, Order) con sus validaciones.
-│   └── services/       # Casos de uso (Gestión de stock, crear orden).
+├── 🟢 core/                  # CAPA DE DOMINIO Y APLICACIÓN (Agnóstico a Frameworks)
+│   ├── domain/               # Entidades (Clases con lógica de negocio pura)
+│   ├── services/             # Casos de Uso (Orquestadores de la lógica)
+│   └── interfaces/           # Contratos (Puertos para los adaptadores)
 │
-├── infrastructure/     # Conexión con el "mundo exterior".
-│   ├── repositories/   # Implementación de IndexedDB/LocalStorage.
-│   └── websocket/      # Mock del sistema de notificaciones.
+├── 🟡 infrastructure/        # CAPA DE INFRAESTRUCTURA (Detalles Técnicos)
+│   ├── repositories/         # Implementación técnica de persistencia (IndexedDB)
+│   └── websocket/            # Mock de notificaciones (Observer Pattern)
 │
-└── presentation/       # La UI.
-    ├── components/     # Componentes visuales.
-    ├── hooks/          # Custom hooks que conectan la UI con los Servicios.
-    └── context/        # Inyección de dependencias.
+├── 🔴 presentation/          # CAPA DE PRESENTACIÓN (REACT)
+│   ├── components/           # UI "Tonta" (Solo renderiza props)
+│   ├── hooks/                # Controladores (Conectan UI con Servicios)
+│   └── context/              # Contenedor de Inyección de Dependencias (DI)
+│
+└── main.tsx                  # Composition Root (Configuración de DI)
 ```

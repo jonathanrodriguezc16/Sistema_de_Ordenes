@@ -1,58 +1,79 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useServices } from '../context/ServiceContext';
-import type { Order } from '../../core/domain/Order';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useCallback } from "react";
+import { useServices } from "../context/ServiceContext";
+import type { Order } from "../../core/domain/Order";
+import toast from "react-hot-toast";
 
+/**
+ * Hook de presentación para gestionar el historial de órdenes.
+ * Mantiene la lista de órdenes actualizada en tiempo real escuchando eventos del OrderService.
+ */
 export const useOrderHistory = () => {
-    const { orderService } = useServices();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(false);
+  const { orderService } = useServices();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    // Función para cargar órdenes (ordenadas por fecha más reciente)
-    const fetchHistory = useCallback(async () => {
-        //setLoading(true);
-        try {
-            const history = await orderService.getHistory();
-            // Ordenamos: las nuevas primero
-            setOrders(history.sort((a, b) =>
-                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            ));
-        } catch (error) {
-            console.error("Error cargando historial:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [orderService]);
+  /**
+   * Recupera el historial completo de órdenes desde el repositorio.
+   * Ordena los resultados por fecha de creación descendente (más recientes primero).
+   */
+  const fetchHistory = useCallback(async () => {
+    try {
+      const history = await orderService.getHistory();
 
-    // Carga inicial
-    useEffect(() => {
-        //1
-        setLoading(true);
-        fetchHistory();
-        // 2. SUSCRIPCIÓN AUTOMÁTICA
-        // Cada vez que createOrder o cancelOrder llamen a notifyChanges(),
-        // este callback se ejecutará y recargará la lista.
-        const unsubscribe = orderService.subscribe(() => {
-            fetchHistory();
-        });
+      setOrders(
+        history.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
+    } catch (error) {
+      console.error("Error cargando historial:", error);
+      toast.error("Error al actualizar el historial");
+    } finally {
+      setLoading(false);
+    }
+  }, [orderService]);
 
-        return () => unsubscribe();
-    }, [fetchHistory, orderService]);
+  useEffect(() => {
+    setLoading(true);
+    fetchHistory();
 
-    // Función de Cancelar
-    const cancelOrder = async (orderId: string) => {
-        if (!confirm('¿Estás seguro de cancelar esta orden? El stock será restaurado.')) return;
+    // Suscripción al Observer del servicio:
+    // Cualquier cambio en una orden (creación o cancelación) disparará una recarga automática.
+    const unsubscribe = orderService.subscribe(() => {
+      fetchHistory();
+    });
 
-        try {
-            await orderService.cancelOrder(orderId);
-            toast.success('Orden cancelada y stock restaurado ✅');
+    return () => unsubscribe();
+  }, [fetchHistory, orderService]);
 
-            // Recargamos la lista para ver el cambio de estado
+  /**
+   * Procesa la cancelación de una orden específica.
+   * Incluye confirmación de usuario y feedback visual.
+   * @param orderId ID de la orden a cancelar.
+   */
+  const cancelOrder = async (orderId: string) => {
+    if (
+      !confirm(
+        "¿Estás seguro de cancelar esta orden? El stock será restaurado."
+      )
+    )
+      return;
 
-        } catch (error: any) {
-            toast.error('Error: ' + error.message);
-        }
-    };
+    try {
+      await orderService.cancelOrder(orderId);
+      toast.success("Orden cancelada y stock restaurado ✅");
+    } catch (error: any) {
+      toast.error(
+        "Error: " + (error.message || "No se pudo cancelar la orden")
+      );
+    }
+  };
 
-    return { orders, loading, cancelOrder, refresh: fetchHistory };
+  return {
+    orders,
+    loading,
+    cancelOrder,
+    refresh: fetchHistory,
+  };
 };

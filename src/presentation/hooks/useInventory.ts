@@ -1,48 +1,46 @@
-import { useState, useEffect } from 'react';
-import { useServices } from '../context/ServiceContext';
-import { Product } from '../../core/domain/Product';
+import { useState, useEffect } from "react";
+import { useServices } from "../context/ServiceContext";
+import { Product } from "../../core/domain/Product";
 
+/**
+ * Hook personalizado para acceder al estado del inventario.
+ * Gestiona la carga inicial y mantiene la lista de productos sincronizada
+ * en tiempo real mediante suscripción al InventoryService.
+ */
 export const useInventory = () => {
-    // Obtenemos la instancia del servicio desde el contexto
-    const { inventoryService } = useServices();
+  const { inventoryService } = useServices();
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        // Función interna para cargar datos iniciales
-        const loadInitialData = async () => {
-            try {
-                setLoading(true);
-                const data = await inventoryService.getAllProducts();
-                setProducts(data);
-            } catch (err) {
-                setError("Error al cargar productos del inventario");
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        // 1. Carga inicial
-        loadInitialData();
-
-        // 2. SUSCRIPCIÓN REACTIVA (La "Magia"):
-        // Nos suscribimos al servicio. Cuando ocurra una venta en cualquier lugar de la app,
-        // el servicio ejecutará este callback con los datos actualizados.
-        const unsubscribe = inventoryService.subscribe((updatedProducts) => {
-            setProducts(updatedProducts);
-        });
-
-        // 3. Limpieza: Dejar de escuchar cuando el componente se desmonte
-        return () => unsubscribe();
-    }, [inventoryService]);
-
-    return {
-        products,
-        loading,
-        error
-        // Ya no devolvemos 'refresh' ni 'purchase' porque la actualización es automática
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const data = await inventoryService.getAllProducts();
+        setProducts(data);
+      } catch (err) {
+        setError("Error al cargar productos del inventario");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    loadInitialData();
+
+    // Suscripción a cambios del servicio (Observer Pattern) para actualizaciones automáticas
+    const unsubscribe = inventoryService.subscribe((updatedProducts) => {
+      setProducts(updatedProducts);
+    });
+
+    return () => unsubscribe();
+  }, [inventoryService]);
+
+  return {
+    products,
+    loading,
+    error,
+  };
 };
