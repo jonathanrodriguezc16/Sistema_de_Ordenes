@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useServices } from '../context/ServiceContext';
 import type { Order } from '../../core/domain/Order';
+import toast from 'react-hot-toast';
 
 export const useOrderHistory = () => {
     const { orderService } = useServices();
@@ -44,11 +45,12 @@ export const useOrderHistory = () => {
 
         try {
             await orderService.cancelOrder(orderId);
-            alert('Orden cancelada y stock restaurado ✅');
+            toast.success('Orden cancelada y stock restaurado ✅');
+
             // Recargamos la lista para ver el cambio de estado
 
         } catch (error: any) {
-            alert('Error: ' + error.message);
+            toast.error('Error: ' + error.message);
         }
     };
 

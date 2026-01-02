@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useServices } from '../context/ServiceContext';
 import type { OrderItem } from '../../core/domain/Order';
 import type { Product } from '../../core/domain/Product';
+import toast from 'react-hot-toast';
 
 export const useOrder = () => {
     const { orderService } = useServices();
@@ -16,7 +17,7 @@ export const useOrder = () => {
 
             // Validación de stock con la cantidad deseada
             if (currentQty + quantity > product.stock) {
-                alert(`No hay suficiente stock. Solo quedan ${product.stock}`);
+                toast.error(`No hay suficiente stock. Solo quedan ${product.stock}`);
                 return prev;
             }
 
@@ -52,10 +53,10 @@ export const useOrder = () => {
         try {
             await orderService.createOrder(clientId, cart);
             setCart([]); // Limpiar carrito
-            alert("¡Orden procesada con éxito!");
+            toast.success("¡Orden procesada con éxito!");
             return true; // Éxito
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
             return false;
         }
     };

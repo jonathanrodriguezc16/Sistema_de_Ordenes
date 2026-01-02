@@ -31,22 +31,8 @@ const orderService = new OrderService(inventoryService, orderRepo);
 
 const clientService = new ClientService(clientRepo);
 
-// 3. Datos de prueba (Seed)
-const seedProducts = [
-  { id: '1', name: 'Laptop Gamer', price: 1500, stock: 10, minStock: 2 },
-  { id: '2', name: 'Teclado Mecánico', price: 100, stock: 5, minStock: 3 },
-  { id: '3', name: 'Monitor 4K', price: 400, stock: 0, minStock: 2 },
-  { id: '4', name: 'Monitor 2K', price: 300, stock: 4, minStock: 2 },
-];
 
-const seedClients = [
-  { id: 'c1', name: 'Juan Pérez', email: 'juan@example.com' },
-  { id: 'c2', name: 'Maria Lopez', email: 'maria@example.com' },
-];
 
-// Inicializamos la BD con datos semilla
-inventoryRepo.seed(seedProducts);
-clientRepo.seed(seedClients);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

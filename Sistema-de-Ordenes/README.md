@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# Sistema de Órdenes con Inventario en Tiempo Real (POS)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una solución técnica para un sistema de Punto de Venta (POS) desarrollado con **React** y **TypeScript**. El objetivo principal fue construir una aplicación robusta, escalable y mantenible, priorizando la **Arquitectura de Software** y la **Programación Orientada a Objetos (POO)** por encima de la implementación tradicional centrada solo en componentes.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologías y Herramientas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **Core:** React 18, TypeScript, Vite.
+* **Estilos:** CSS Modules / TailwindCSS (según tu configuración).
+* **Persistencia:** IndexedDB (Almacenamiento robusto) y LocalStorage.
+* **Patrones de Diseño:** Observer, Repository, Dependency Injection, Singleton.
+* **Gestión de Estado:** React Context (solo para Inyección de Dependencias) + Hooks personalizados.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🏗 Arquitectura del Proyecto
 
-## Expanding the ESLint configuration
+El proyecto sigue los principios de **Clean Architecture** (Arquitectura Limpia) y **Hexagonal**, separando estrictamente las responsabilidades en capas. La regla de oro aplicada es: **"La lógica de negocio NO vive en los componentes de React"**.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Capa de Dominio (`src/core/domain`)
+Contiene las entidades y reglas de negocio puras. No dependen de React ni de librerías externas.
+* **Entidades Ricas:** `Product`, `Order`, `Client`. Estas clases contienen métodos de negocio (ej: `product.decreaseStock()`, `order.calculateTotal()`) en lugar de ser simples objetos de datos.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 2. Capa de Aplicación (`src/core/services`)
+Orquesta los casos de uso de la aplicación.
+* **`InventoryService`**: Gestiona el stock y emite eventos de dominio.
+* **`OrderService`**: Coordina la creación de órdenes, validaciones y transacciones.
+* **`NotificationService`**: Maneja la lógica de alertas en tiempo real.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 3. Capa de Infraestructura (`src/infrastructure`)
+Implementaciones concretas de interfaces definidas en el Core. Aquí es donde la aplicación "toca" el mundo exterior.
+* **Repositorios:** Implementación de persistencia con `IndexedDB` y `LocalStorage`.
+* **WebSockets Mock:** Simulación de eventos en tiempo real usando el **Patrón Observer** en memoria (`NotificationService.ts`).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 4. Capa de Presentación (`src/presentation`)
+Responsable únicamente de pintar la interfaz.
+* **Componentes:** Tontos y funcionales. Solo reciben datos y emiten eventos de UI.
+* **Custom Hooks:** (`useInventory`, `useOrder`) Actúan como adaptadores entre la Vista y los Servicios.
+* **Dependency Injection:** Un `ServiceContext` inyecta las instancias de los servicios, permitiendo cambiar implementaciones (ej: cambiar IndexedDB por una API real) sin tocar los componentes.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ✨ Funcionalidades Clave
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 📦 Gestión de Inventario
+* Visualización de productos con indicadores de estado (Disponible, Pocas Unidades, Agotado).
+* **Validación Estricta:** El sistema impide transacciones que dejen el stock en negativo (validado en la Entidad de Dominio).
+
+### 🛒 Sistema de Órdenes
+* Carrito de compras con selección de clientes.
+* Cálculo automático de subtotales y totales.
+* **Atomicidad:** Al confirmar una orden, el stock se descuenta y la orden se guarda en una sola operación lógica.
+* **Rollback (Extra):** Capacidad de cancelar órdenes y devolver el stock automáticamente al inventario.
+
+### 🔔 Notificaciones en Tiempo Real (Mock)
+Sistema de alertas reactivas para el Administrador:
+* **`inventory:low`**: Alerta cuando el stock baja del umbral mínimo.
+* **`inventory:out`**: Alerta crítica cuando un producto se agota.
+* Panel de notificaciones persistente (no se pierde al recargar) con contador de no leídos.
+
+### 💾 Persistencia de Datos
+* Uso de **IndexedDB** para manejar grandes volúmenes de datos de forma asíncrona y eficiente, superando las limitaciones del LocalStorage.
+
+---
+
+## 📂 Estructura de Carpetas
+
+```bash
+src/
+├── core/                   # Lógica de Negocio Pura (Agnóstica del Framework)
+│   ├── domain/             # Entidades (Product, Order, Client)
+│   ├── services/           # Casos de Uso (Logica de aplicación)
+│   └── interfaces/         # Contratos para repositorios (Repository Pattern)
+│
+├── infrastructure/         # Implementaciones Técnicas
+│   ├── repositories/       # Acceso a Datos (IndexedDB, LocalStorage)
+│   ├── persistence/        # Configuración de BD
+│   └── websocket/          # Mock de servicio de notificaciones
+│
+├── presentation/           # Capa de Vista (React)
+│   ├── components/         # Componentes UI reutilizables
+│   ├── hooks/              # Lógica de conexión Vista-Controlador
+│   └── context/            # Inyección de Dependencias
+│
+└── main.tsx                # Punto de entrada y composición (Composition Root)

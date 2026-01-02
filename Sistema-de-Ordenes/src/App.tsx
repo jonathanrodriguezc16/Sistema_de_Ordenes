@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useInventory } from './presentation/hooks/useInventory';
 import { useOrder } from './presentation/hooks/useOrder';
 import { useServices } from './presentation/context/ServiceContext';
+import { Toaster } from 'react-hot-toast';
 
 // Iconos de Lucide
 import {
@@ -9,7 +10,6 @@ import {
   AlertCircle,
   PackageOpen,
   Settings,
-  Plus
 } from 'lucide-react';
 
 // Componentes
@@ -163,6 +163,7 @@ function App() {
         onRemove={handleRemove}
         onGoToAdmin={() => setCurrentView('admin')}
       />
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }

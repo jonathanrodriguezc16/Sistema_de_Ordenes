@@ -99,4 +99,31 @@ export class InventoryService {
         // Notificamos a la UI para que refresque el stock visualmente
         await this.notifyChanges();
     }
+
+    async updateProduct(id: string, updates: { name: string; price: number; stock: number; minStock: number }): Promise<void> {
+        const products = await this.getAllProducts();
+
+        const index = products.findIndex(p => p.id === id);
+        if (index === -1) throw new Error("Producto no encontrado");
+
+        // Creamos una nueva instancia con los datos actualizados
+        // (Nota: En una arquitectura pura, deberíamos usar métodos del dominio, pero esto es pragmático)
+        const currentProduct = products[index];
+
+        // Mantenemos el ID original pero actualizamos los campos
+        const updatedProduct = new Product(
+            currentProduct.id,
+            updates.name,
+            updates.price,
+            updates.stock, // Aquí se actualiza el stock
+            updates.minStock
+        );
+
+        // Reemplazamos en el array
+        products[index] = updatedProduct;
+
+        // Guardamos y notificamos
+        await this.repository.saveProducts(products);
+        await this.notifyChanges();
+    }
 }
